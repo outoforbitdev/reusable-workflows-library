@@ -3,4 +3,5 @@
 ### Features
 
 - `label-manager.yml`
+- `release.yml`
 - `scorecard.yml`

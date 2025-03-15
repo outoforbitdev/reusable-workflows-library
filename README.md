@@ -26,6 +26,10 @@ A library of reusable workflows.
 
 Runs [action-label-manager](https://github.com/outoforbitdev/action-label-manager)
 
+### release.yml
+
+Runs [action-release-changelog](https://github.com/outoforbitdev/action-release-changelog)
+
 ### scorecard.yml
 
 Runs [OSSF Scorecard action](https://github.com/ossf/scorecard-action#installation)
