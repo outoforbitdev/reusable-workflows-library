@@ -6,9 +6,6 @@ on:
       - opened
       - labeled
   pull_request:
-    types:
-      - opened
-      - labeled
 jobs:
   sync-labels:
     permissions:
