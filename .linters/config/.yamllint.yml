@@ -1,0 +1,11 @@
+extends: default
+
+ignore: |
+  scorecard.yml
+  node_modules
+
+rules:
+  document-start:
+    present: false
+  comments:
+    min-spaces-from-content: 1
