@@ -1,0 +1,10 @@
+extends: default
+
+ignore: |
+  node_modules
+
+rules:
+  document-start:
+    present: false
+  comments:
+    min-spaces-from-content: 1
