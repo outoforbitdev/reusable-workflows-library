@@ -20,6 +20,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Create Release
+        # yamllint disable-line rule:line-length
         uses: outoforbitdev/action-release-changelog@a9aa3f7f87d3955e1c07f1decfe6df72d8b44cbf # v0.0.11
         id: semantic-release
         with:
