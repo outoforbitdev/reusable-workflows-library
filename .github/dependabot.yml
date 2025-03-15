@@ -2,7 +2,7 @@
 version: 2
 updates:
   - package-ecosystem: "github-actions"
-    directories: 
+    directories:
       - "/" # Default .github/workflows directory for this repo's workflows
       - "/src" # Reusable workflows directory
     schedule:
