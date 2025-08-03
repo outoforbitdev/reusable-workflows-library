@@ -83,7 +83,7 @@ def post_comments(comments, repo, pr_number, token, commit_id):
 
         payload = {
             "body": comment,
-            "commit_id": commit_id,
+            "commit_id": os.environ['COMMID_ID'],
             "path": file_path,
             "line": line,
             "side": "RIGHT"
