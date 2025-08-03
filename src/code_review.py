@@ -8,7 +8,8 @@ def get_github_env():
     return {
         "token": os.environ["GITHUB_TOKEN"],
         "repo": os.environ["GITHUB_REPOSITORY"],
-        "event_path": os.environ["GITHUB_EVENT_PATH"]
+        "event_path": os.environ["GITHUB_EVENT_PATH"],
+        "commit_id": os.environ["GITHUB_SHA"]
     }
 
 def get_pr_info(event_path):
@@ -69,7 +70,7 @@ def get_model_response(prompt):
     )
     return response.output_text
 
-def post_comments(comments, repo, pr_number, token):
+def post_comments(comments, repo, pr_number, token, commit_id):
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github+json"
@@ -82,6 +83,7 @@ def post_comments(comments, repo, pr_number, token):
 
         payload = {
             "body": comment,
+            "commit_id": commit_id,
             "path": file_path,
             "line": line,
             "side": "RIGHT"
@@ -137,7 +139,7 @@ def main():
 
     try:
         comments = json.loads(model_output)
-        post_comments(comments, env["repo"], pr_number, env["token"])
+        post_comments(comments, env["repo"], pr_number, env["token"], env["commit_id"])
     except json.JSONDecodeError:
         print("Model response could not be parsed as JSON:")
         print(model_output)
