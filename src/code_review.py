@@ -56,14 +56,14 @@ Diff:
 def get_model_response(prompt):
     # Replace this with your actual model call (OpenAI, Claude, etc.)
     # Here's a placeholder for OpenAI
-    import openai
-    openai.api_key = os.environ["OPENAI_API_KEY"]
-    response = openai.ChatCompletion.create(
+    from openai import OpenAI
+    client = OpenAI(
+        api_key=os.environ["OPENAI_API_KEY"]
+    )
+    response = client.responses.create(
         model="gpt-4o",
-        messages=[
-            {"role": "system", "content": "You are a code review assistant."},
-            {"role": "user", "content": prompt}
-        ]
+        instructions="You are a code review assistant.",
+        input=prompt,
     )
     return response["choices"][0]["message"]["content"]
 
@@ -97,7 +97,6 @@ def main():
     
     diff = get_diff(owner, repo, pr_number)
     prompt = build_prompt(diff, pr_title, pr_body)
-    print(prompt)
     model_output = get_model_response(prompt)
 
     try:
