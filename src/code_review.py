@@ -90,6 +90,8 @@ def post_comments(comments, repo, pr_number, token, commit_id):
         }
 
         url = f"{GITHUB_API_URL}/repos/{repo}/pulls/{pr_number}/comments"
+        print("payload for posting comment:")
+        print(payload)
         print("URL for posting comment:")
         print(url)
         response = requests.post(url, headers=headers, json=payload)
@@ -109,31 +111,11 @@ def main():
     # model_output = get_model_response(prompt)
     model_output = """
         [
-        {
-            "file": "src/code_review.py",
-            "line": 77,
-            "comment": "nitpick: Consider adding a timeout to the get request for fetching the diff to prevent the process from hanging indefinitely if the server doesn't respond."
-        },
-        {
-            "file": "src/code_review.py",
-            "line": 100,
-            "comment": "security: The 'Bearer' token used in the Authorization header could be susceptible to misuse if not handled securely; consider adding error handling or logging to mitigate this risk."
-        },
-        {
-            "file": "src/code_review.py",
-            "line": 70,
-            "comment": "enhancement: 'OpenAI' import can be added at the beginning of the file with the other imports for consistency and readability."
-        },
-        {
-            "file": ".github/workflows/code-review.yml",
-            "line": 24,
-            "comment": "enhancement: Consider adding caching for pip dependencies to speed up workflow execution on subsequent runs."
-        },
-        {
-            "file": "src/code_review.py",
-            "line": 107,
-            "comment": "coding style: It might be beneficial to log the exception details for the JSONDecodeError to help trace any issues with the model output format."
-        }
+            {
+                "file": "src/code_review.py",
+                "line": 107,
+                "comment": "coding style: It might be beneficial to log the exception details for the JSONDecodeError to help trace any issues with the model output format."
+            }
         ]
     """
 
