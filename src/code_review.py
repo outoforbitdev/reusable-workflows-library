@@ -30,12 +30,6 @@ def build_prompt(diff, title, body):
     return f"""
 You are an expert code reviewer. Please analyze the following pull request and provide feedback.
 
-PR Title: {title}
-PR Description: {body}
-
-Diff:
-{diff}
-
 Expected Output Format (as JSON):
 [
   {{
@@ -46,7 +40,17 @@ Expected Output Format (as JSON):
   ...
 ]
 
+All comments should be in conventional comment format: <label> (decorations): <subject>
+
 Please only include useful feedback in the specified format.
+
+Below are the details of the pull request, including the title, description, and diff:
+
+PR Title: {title}
+PR Description: {body}
+
+Diff:
+{diff}
 """
 
 def get_model_response(prompt):
@@ -94,14 +98,14 @@ def main():
     diff = get_diff(owner, repo, pr_number)
     prompt = build_prompt(diff, pr_title, pr_body)
     print(prompt)
-    # model_output = get_model_response(prompt)
+    model_output = get_model_response(prompt)
 
-    # try:
-    #     comments = json.loads(model_output)
-    #     post_comments(comments, env["repo"], pr_number, env["token"])
-    # except json.JSONDecodeError:
-    #     print("Model response could not be parsed as JSON:")
-    #     print(model_output)
+    try:
+        comments = json.loads(model_output)
+        post_comments(comments, env["repo"], pr_number, env["token"])
+    except json.JSONDecodeError:
+        print("Model response could not be parsed as JSON:")
+        print(model_output)
 
 if __name__ == "__main__":
     main()
