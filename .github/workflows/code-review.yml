@@ -23,4 +23,4 @@ jobs:
         #   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GITHUB_EVENT_PATH: ${{ github.event_path }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: python ai-pr-review.py
+        run: python code_review.py
