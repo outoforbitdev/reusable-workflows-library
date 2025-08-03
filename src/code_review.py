@@ -88,7 +88,11 @@ def post_comments(comments, repo, pr_number, token):
         }
 
         url = f"{GITHUB_API_URL}/repos/{repo}/pulls/{pr_number}/comments"
+        print("URL for posting comment:")
+        print(url)
         response = requests.post(url, headers=headers, json=payload)
+        print("Response from posting comment:")
+        print(response)
         if response.status_code >= 300:
             print(f"Failed to post comment: {response.status_code} - {response.text}")
 
