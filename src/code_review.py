@@ -90,14 +90,10 @@ def main():
     env = get_github_env()
     owner, repo = env["repo"].split("/")
     pr_number, pr_title, pr_body = get_pr_info(env["event_path"])
-    print("owner: ", owner)
-    print("repo: ", repo)
-    print("pr_number: ", pr_number)
-    print("pr_title: ", pr_title)
-    print("pr_body: ", pr_body)
     
-    # diff = get_diff(owner, repo, pr_number)
-    # prompt = build_prompt(diff, pr_title, pr_body)
+    diff = get_diff(owner, repo, pr_number)
+    prompt = build_prompt(diff, pr_title, pr_body)
+    print(prompt)
     # model_output = get_model_response(prompt)
 
     # try:
