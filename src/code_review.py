@@ -65,7 +65,7 @@ def get_model_response(prompt):
         instructions="You are a code review assistant.",
         input=prompt,
     )
-    return response["choices"][0]["message"]["content"]
+    return response.output_text
 
 def post_comments(comments, repo, pr_number, token):
     headers = {
