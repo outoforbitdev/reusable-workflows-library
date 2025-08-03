@@ -26,5 +26,5 @@ jobs:
           GITHUB_EVENT_PATH: ${{ github.event_path }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           PR_REVIEW_TOKEN: ${{ secrets.PR_REVIEW_TOKEN }}
-          COMMIT_ID: ${{ github.event.pull_request.head.sha}}
+          GITHUB_COMMIT_SHA: ${{ github.event.pull_request.head.sha}}
         run: python src/code_review.py

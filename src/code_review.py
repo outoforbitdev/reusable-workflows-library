@@ -9,7 +9,7 @@ def get_github_env():
         "token": os.environ["GITHUB_TOKEN"],
         "repo": os.environ["GITHUB_REPOSITORY"],
         "event_path": os.environ["GITHUB_EVENT_PATH"],
-        "commit_id": os.environ["GITHUB_SHA"]
+        "commit_id": os.environ["GITHUB_COMMIT_SHA"]
     }
 
 def get_pr_info(event_path):
@@ -83,7 +83,7 @@ def post_comments(comments, repo, pr_number, token, commit_id):
 
         payload = {
             "body": comment,
-            "commit_id": os.environ['COMMID_ID'],
+            "commit_id": commit_id,
             "path": file_path,
             "line": line,
             "side": "RIGHT"
