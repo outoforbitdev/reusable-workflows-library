@@ -40,7 +40,7 @@ Expected Output Format (as JSON):
   ...
 ]
 
-Do not include any other text or explanations outside of the JSON format and do not wrap the JSON brackets in any additional formatting.
+Do not include any other text or explanations outside of the JSON format and do not wrap the JSON brackets in any additional formatting. Do not wrap the JSON in a code block (e.g., no triple backticks).
 
 All comments should be in conventional comment format: <label> (decorations): <subject>
 
