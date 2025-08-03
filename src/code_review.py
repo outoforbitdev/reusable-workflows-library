@@ -40,6 +40,8 @@ Expected Output Format (as JSON):
   ...
 ]
 
+Do not include any other text or explanations outside of the JSON format and do not wrap the JSON brackets in any additional formatting.
+
 All comments should be in conventional comment format: <label> (decorations): <subject>
 
 Please only include useful feedback in the specified format.
@@ -97,6 +99,7 @@ def main():
     
     diff = get_diff(owner, repo, pr_number)
     prompt = build_prompt(diff, pr_title, pr_body)
+    print(prompt)
     model_output = get_model_response(prompt)
 
     try:
