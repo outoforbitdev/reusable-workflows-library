@@ -101,6 +101,7 @@ def post_comments(comments, repo, pr_number, token, commit_id):
             print(f"Failed to post comment: {response.status_code} - {response.text}")
 
 def main():
+    print(os.environ['GITHUB_COMMENT'])
     env = get_github_env()
     owner, repo = env["repo"].split("/")
     pr_number, pr_title, pr_body = get_pr_info(env["event_path"])
