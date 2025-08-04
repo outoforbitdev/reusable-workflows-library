@@ -13,7 +13,7 @@ jobs:
     permissions:
       pull-requests: write
     # Only if the comment contains the trigger word "ood ai review"
-    if: contains(github.event.comment.body, 'ood ai review')
+    # if: contains(github.event.comment.body, 'ood ai review')
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
