@@ -1,15 +1,17 @@
 name: PR Review
 
+permissions: {}
 on:
-  issue_comment:
-    types: [created, edited]
+  pull_request:
+    types: [opened, synchronize]  # Trigger on pull request opened or updated
+    # types: [created, edited]
 
 jobs:
   review:
     name: AI Code Review
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      pull-requests: write
     # Only if the comment contains the trigger word "ood ai review"
     if: contains(github.event.comment.body, 'ood ai review')
     steps:

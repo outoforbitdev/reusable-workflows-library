@@ -71,8 +71,12 @@ def get_model_response(prompt):
     return response.output_text
 
 def post_comments(comments, repo, pr_number, token, commit_id):
+    # headers = {
+    #     "Authorization": f"Bearer {os.environ['PR_REVIEW_TOKEN']}",
+    #     "Accept": "application/vnd.github+json"
+    # }
     headers = {
-        "Authorization": f"Bearer {os.environ['PR_REVIEW_TOKEN']}",
+        "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github+json"
     }
 
