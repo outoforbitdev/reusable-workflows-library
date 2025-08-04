@@ -30,7 +30,6 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GITHUB_EVENT_PATH: ${{ github.event_path }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          PR_REVIEW_TOKEN: ${{ secrets.PR_REVIEW_TOKEN }}
           GITHUB_COMMIT_SHA: ${{ github.event.pull_request.head.sha}}
           GITHUB_COMMENT: ${{ github.event.comment.body }}
         run: python src/code_review.py

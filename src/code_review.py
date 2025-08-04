@@ -71,10 +71,6 @@ def get_model_response(prompt):
     return response.output_text
 
 def post_comments(comments, repo, pr_number, token, commit_id):
-    # headers = {
-    #     "Authorization": f"Bearer {os.environ['PR_REVIEW_TOKEN']}",
-    #     "Accept": "application/vnd.github+json"
-    # }
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github+json"
@@ -94,35 +90,27 @@ def post_comments(comments, repo, pr_number, token, commit_id):
         }
 
         url = f"{GITHUB_API_URL}/repos/{repo}/pulls/{pr_number}/comments"
-        print("payload for posting comment:")
-        print(payload)
-        print("URL for posting comment:")
-        print(url)
         response = requests.post(url, headers=headers, json=payload)
-        print("Response from posting comment:")
-        print(response)
         if response.status_code >= 300:
             print(f"Failed to post comment: {response.status_code} - {response.text}")
 
 def main():
-    print(os.environ['GITHUB_COMMENT'])
     env = get_github_env()
     owner, repo = env["repo"].split("/")
     pr_number, pr_title, pr_body = get_pr_info(env["event_path"])
     
     diff = get_diff(owner, repo, pr_number)
     prompt = build_prompt(diff, pr_title, pr_body)
-    print(prompt)
-    # model_output = get_model_response(prompt)
-    model_output = """
-        [
-            {
-                "file": "src/code_review.py",
-                "line": 107,
-                "comment": "coding style: It might be beneficial to log the exception details for the JSONDecodeError to help trace any issues with the model output format."
-            }
-        ]
-    """
+    model_output = get_model_response(prompt)
+    # model_output = """
+    #     [
+    #         {
+    #             "file": "src/code_review.py",
+    #             "line": 107,
+    #             "comment": "coding style: It might be beneficial to log the exception details for the JSONDecodeError to help trace any issues with the model output format."
+    #         }
+    #     ]
+    # """
 
     try:
         comments = json.loads(model_output)
