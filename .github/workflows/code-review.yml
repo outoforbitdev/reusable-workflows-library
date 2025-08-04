@@ -2,9 +2,8 @@ name: PR Review
 
 permissions: {}
 on:
-  pull_request:
-    types: [opened, synchronize]  # Trigger on pull request opened or updated
-    # types: [created, edited]
+  issue_comment:
+    types: [created, edited]
 
 jobs:
   review:
