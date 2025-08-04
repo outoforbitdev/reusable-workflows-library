@@ -1,14 +1,17 @@
 name: PR Review
 
 on:
-  pull_request:
-    types: [opened, edited, synchronize]
+  issue_comment:
+    types: [created, edited]
 
 jobs:
   review:
+    name: AI Code Review
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    # Only if the comment contains the trigger word "ood ai review"
+    if: contains(github.event.comment.body, 'ood ai review')
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
