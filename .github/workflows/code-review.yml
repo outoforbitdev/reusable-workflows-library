@@ -1,0 +1,34 @@
+name: PR Review
+
+permissions: {}
+on:
+  issue_comment:
+    types: [created, edited]
+
+jobs:
+  review:
+    name: AI Code Review
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    # Only if the comment contains the trigger word "ood ai review"
+    # if: contains(github.event.comment.body, 'ood ai review')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install openai requests
+
+      - name: Run AI Review
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_COMMIT_SHA: ${{ github.event.pull_request.head.sha}}
+          GITHUB_COMMENT: ${{ github.event.comment.body }}
+        run: python src/code_review.py
