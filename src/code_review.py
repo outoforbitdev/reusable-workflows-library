@@ -101,6 +101,8 @@ def main():
     
     diff = get_diff(owner, repo, pr_number)
     prompt = build_prompt(diff, pr_title, pr_body)
+    print("Prompt:")
+    print(prompt)
     print("Sending diff to model for review...")
     model_output = get_model_response(prompt)
     print("Review completed. Model feedback:")
