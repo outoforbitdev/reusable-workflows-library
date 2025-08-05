@@ -102,17 +102,8 @@ def main():
     diff = get_diff(owner, repo, pr_number)
     prompt = build_prompt(diff, pr_title, pr_body)
     print("Sending diff to model for review...")
-    # model_output = get_model_response(prompt)
+    model_output = get_model_response(prompt)
     print("Review completed. Adding comments to PR...")
-    model_output = """
-        [
-            {
-                "file": "src/code_review.py",
-                "line": 107,
-                "comment": "coding style: It might be beneficial to log the exception details for the JSONDecodeError to help trace any issues with the model output format."
-            }
-        ]
-    """
 
     try:
         comments = json.loads(model_output)
