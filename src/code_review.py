@@ -103,7 +103,9 @@ def main():
     prompt = build_prompt(diff, pr_title, pr_body)
     print("Sending diff to model for review...")
     model_output = get_model_response(prompt)
-    print("Review completed. Adding comments to PR...")
+    print("Review completed. Model feedback:")
+    print(model_output)
+    print("Adding comments to PR...")
 
     try:
         comments = json.loads(model_output)
