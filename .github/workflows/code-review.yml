@@ -2,8 +2,8 @@ name: PR Review
 
 permissions: {}
 on:
-  issue_comment:
-    types: [created, edited]
+  pull_request:
+    types: [labeled]
 
 jobs:
   review:
@@ -12,7 +12,7 @@ jobs:
     permissions:
       pull-requests: write
     # Only if the comment contains the trigger word "ood ai review"
-    # if: contains(github.event.comment.body, 'ood ai review')
+    if: ${{ contains(github.event.pull_request.labels, 'state: ai review requested') }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -29,6 +29,5 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GITHUB_EVENT_PATH: ${{ github.event_path }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_COMMIT_SHA: ${{ github.event.pull_request.head.sha}}
-          GITHUB_COMMENT: ${{ github.event.comment.body }}
+          GITHUB_COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
         run: python src/code_review.py
