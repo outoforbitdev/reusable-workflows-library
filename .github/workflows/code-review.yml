@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
-    if: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'state: ai review requested') }}
+    if: "${{ contains(join(github.event.pull_request.labels.*.name, ',') , 'state: ai review requested') }}"
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
