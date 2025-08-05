@@ -6,6 +6,9 @@ on:
       - opened
       - labeled
   pull_request:
+    types:
+      - opened
+      - labeled
 # Declare default permissions as none.
 permissions: {}
 jobs:
@@ -21,7 +24,8 @@ jobs:
           persist-credentials: false
       - name: Set Labels
         # yamllint disable-line rule:line-length
-        uses: outoforbitdev/action-label-manager@082ee285fd9918136bfa237a5cdccb78e7333538 # v0.0.2
+        uses: outoforbitdev/action-label-manager@f64cd32dd7a7d815dede80051cfd67d6dc667052 # v0.0.3
         id: set-labels
         with:
           access-token: ${{ secrets.GITHUB_TOKEN }}
+          labels-file: .labels.json
