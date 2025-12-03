@@ -15,10 +15,6 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.11"
-
-      - name: Install dependencies
-        run: pip install re
-
       - name: Check for open tasks
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
