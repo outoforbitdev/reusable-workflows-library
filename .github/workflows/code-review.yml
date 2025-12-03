@@ -14,7 +14,7 @@ jobs:
     # Only if the comment contains the trigger word "ood ai review"
     # if: contains(github.event.comment.body, 'ood ai review')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
