@@ -1,0 +1,29 @@
+name: Check Tasks
+
+permissions: {}
+on:
+    pull_request:
+        types: [opened, edited]
+
+jobs:
+  check-tasks:
+    name: Check Tasks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install re
+
+      - name: Check for open tasks
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_COMMIT_SHA: ${{ github.event.pull_request.head.sha}}
+          GITHUB_COMMENT: ${{ github.event.comment.body }}
+        run: python src/check_tasks.py
