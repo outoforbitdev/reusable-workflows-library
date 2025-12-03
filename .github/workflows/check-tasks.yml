@@ -1,34 +1,25 @@
-name: PR Review
+name: Check Tasks
 
 permissions: {}
 on:
-  issue_comment:
-    types: [created, edited]
+    pull_request:
+        types: [opened, edited]
 
 jobs:
-  review:
-    name: AI Code Review
+  check-tasks:
+    name: Check Tasks
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-    # Only if the comment contains the trigger word "ood ai review"
-    # if: contains(github.event.comment.body, 'ood ai review')
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - name: Set up Python
         uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
         with:
           python-version: "3.11"
-
-      - name: Install dependencies
-        run: pip install openai requests
-
-      - name: Run AI Review
+      - name: Check for open tasks
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GITHUB_EVENT_PATH: ${{ github.event_path }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_COMMIT_SHA: ${{ github.event.pull_request.head.sha}}
           GITHUB_COMMENT: ${{ github.event.comment.body }}
-        run: python src/code_review.py
+        run: python src/check_tasks.py
