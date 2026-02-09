@@ -73,6 +73,6 @@ jobs:
       # Scanning dashboard
       - name: "Upload to code-scanning"
         # yamllint disable-line rule:line-length
-        uses: github/codeql-action/upload-sarif@fe4161a26a8629af62121b670040955b330f9af2 # v4.31.6
+        uses: github/codeql-action/upload-sarif@45cbd0c69e560cd9e7cd7f8c32362050c9b7ded2 # v4.32.2
         with:
           sarif_file: results.sarif
