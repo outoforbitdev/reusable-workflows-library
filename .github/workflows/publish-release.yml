@@ -56,6 +56,7 @@ jobs:
           RELEASE_DRAFT: ${{ inputs.draft }}
           RELEASE_PRERELEASE: ${{ inputs.prerelease }}
           ARTIFACT_NAME: ${{ inputs.artifact-name }}
+          RELEASE_TARGET: ${{ github.sha }}
         run: |
           flags=()
           if [ "$RELEASE_DRAFT" = "true" ]; then
@@ -67,11 +68,14 @@ jobs:
 
           artifact_files=()
           if [ -n "$ARTIFACT_NAME" ]; then
-            artifact_files=(release-artifacts/*)
+            while IFS= read -r -d '' file; do
+              artifact_files+=("$file")
+            done < <(find release-artifacts -type f -print0)
           fi
 
           url=$(gh release create "v${RELEASE_VERSION}" \
             -R "${{ github.repository }}" \
+            --target "$RELEASE_TARGET" \
             --notes "$RELEASE_NOTES" \
             "${flags[@]}" \
             "${artifact_files[@]}")

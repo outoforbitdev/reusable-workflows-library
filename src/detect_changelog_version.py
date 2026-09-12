@@ -85,12 +85,13 @@ def detect(changelog_path, repo):
         sys.exit(1)
 
     releases = fetch_releases(repo)
+    normalized_tags = {normalize_version(r["tag_name"]) for r in releases}
     previous_tag = get_last_release_tag(releases)
     previous_version = normalize_version(previous_tag) if previous_tag else ""
     new_version = normalize_version(version)
 
     return {
-        "should-release": "true" if new_version != previous_version else "false",
+        "should-release": "true" if new_version not in normalized_tags else "false",
         "new-version": new_version,
         "previous-version": previous_version,
         "release-notes": notes,

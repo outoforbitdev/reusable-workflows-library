@@ -99,7 +99,7 @@ jobs:
 
 ### release.yml
 
-Runs [action-release-changelog](https://github.com/outoforbitdev/action-release-changelog)
+Detects whether a new version is ready to release (via `detect-new-changelog-version.yml`) and, if so, creates the GitHub release (via `publish-release.yml`).
 
 #### Example usage
 
@@ -115,6 +115,8 @@ permissions: read-all
 jobs:
   release:
     uses: outoforbitdev/reusable-workflows-library/.github/workflows/release.yml@1.0.0
+    with:
+      draft: false
     permissions:
       contents: write
 ```

@@ -1,4 +1,3 @@
-import json
 import os
 import tempfile
 import unittest
@@ -204,6 +203,30 @@ class TestDetect(unittest.TestCase):
             os.remove(changelog_path)
 
         self.assertEqual(result["should-release"], "false")
+
+    @patch("detect_changelog_version.fetch_releases")
+    def test_should_release_false_when_an_older_release_matches(self, mock_fetch):
+        # An out-of-order release (e.g. a prerelease cut from `dev` after
+        # `main`'s version was released) means the MOST RECENT release tag is
+        # not the one matching the changelog's top version -- but that version
+        # is already released, so `should-release` must still be false.
+        mock_fetch.return_value = [
+            {"tag_name": "v1.1.0", "created_at": "2026-02-01T00:00:00Z"},
+            {"tag_name": "v1.2.0-beta.1", "created_at": "2026-03-01T00:00:00Z"},
+        ]
+        with tempfile.NamedTemporaryFile(
+            "w", suffix=".md", delete=False
+        ) as changelog:
+            changelog.write("## 1.1.0\n\nAlready released.\n")
+            changelog_path = changelog.name
+
+        try:
+            result = detect(changelog_path, "outoforbitdev/example")
+        finally:
+            os.remove(changelog_path)
+
+        self.assertEqual(result["should-release"], "false")
+        self.assertEqual(result["previous-version"], "1.2.0-beta.1")
 
     @patch("detect_changelog_version.fetch_releases")
     def test_exits_with_error_when_no_version_found(self, mock_fetch):

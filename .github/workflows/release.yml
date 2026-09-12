@@ -7,6 +7,11 @@ on:
         description: "Create the release as a draft"
         type: boolean
         default: true
+    outputs:
+      release-url:
+        description: "URL of the created release, if one was created"
+        # yamllint disable-line rule:line-length
+        value: ${{ jobs.publish-called.outputs.release-url || jobs.publish-pushed.outputs.release-url }}
   push:
     branches:
       - main
@@ -16,11 +21,12 @@ on:
 jobs:
   detect:
     permissions:
-      contents: read
+      contents: write
     uses: ./.github/workflows/detect-new-changelog-version.yml
   publish-called:
     needs: detect
-    if: github.event_name == 'workflow_call' && needs.detect.outputs.should-release == 'true'
+    # yamllint disable-line rule:line-length
+    if: toJSON(inputs.draft) != 'null' && needs.detect.outputs.should-release == 'true'
     permissions:
       contents: write
     uses: ./.github/workflows/publish-release.yml
@@ -31,7 +37,8 @@ jobs:
       draft: ${{ inputs.draft }}
   publish-pushed:
     needs: detect
-    if: github.event_name != 'workflow_call' && needs.detect.outputs.should-release == 'true'
+    # yamllint disable-line rule:line-length
+    if: toJSON(inputs.draft) == 'null' && needs.detect.outputs.should-release == 'true'
     permissions:
       contents: write
     uses: ./.github/workflows/publish-release.yml

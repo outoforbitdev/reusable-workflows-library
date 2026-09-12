@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Detect New Changelog Version
     permissions:
-      contents: read
+      contents: write
     outputs:
       should-release: ${{ steps.detect.outputs.should-release }}
       new-version: ${{ steps.detect.outputs.new-version }}
@@ -41,9 +41,16 @@ jobs:
       release-notes: ${{ steps.detect.outputs.release-notes }}
       is-prerelease: ${{ steps.detect.outputs.is-prerelease }}
     steps:
-      - name: Checkout
+      - name: Checkout caller repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
+      - name: Checkout reusable-workflows-library scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: .rwl
           persist-credentials: false
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -53,5 +60,5 @@ jobs:
         id: detect
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        # yamllint disable-line rule:line-length
-        run: python src/detect_changelog_version.py "${{ inputs.changelog-file }}"
+          CHANGELOG_FILE: ${{ inputs.changelog-file }}
+        run: python .rwl/src/detect_changelog_version.py "$CHANGELOG_FILE"
