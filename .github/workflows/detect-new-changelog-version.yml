@@ -1,0 +1,57 @@
+# .github/workflows/detect-new-changelog-version.yml
+name: Detect New Changelog Version
+
+on:
+  workflow_call:
+    inputs:
+      changelog-file:
+        description: "Path to the changelog to inspect"
+        type: string
+        default: "./CHANGELOG.md"
+    outputs:
+      should-release:
+        description: "Whether the changelog's top version is not yet released"
+        value: ${{ jobs.detect.outputs.should-release }}
+      new-version:
+        description: "The version found at the top of the changelog"
+        value: ${{ jobs.detect.outputs.new-version }}
+      previous-version:
+        description: "The most recent existing GitHub release tag"
+        value: ${{ jobs.detect.outputs.previous-version }}
+      release-notes:
+        description: "The Markdown body under the top version's heading"
+        value: ${{ jobs.detect.outputs.release-notes }}
+      is-prerelease:
+        description: "Whether the new version has a semver prerelease suffix"
+        value: ${{ jobs.detect.outputs.is-prerelease }}
+
+# Declare default permissions as none.
+permissions: {}
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    name: Detect New Changelog Version
+    permissions:
+      contents: read
+    outputs:
+      should-release: ${{ steps.detect.outputs.should-release }}
+      new-version: ${{ steps.detect.outputs.new-version }}
+      previous-version: ${{ steps.detect.outputs.previous-version }}
+      release-notes: ${{ steps.detect.outputs.release-notes }}
+      is-prerelease: ${{ steps.detect.outputs.is-prerelease }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+      - name: Detect new changelog version
+        id: detect
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # yamllint disable-line rule:line-length
+        run: python src/detect_changelog_version.py "${{ inputs.changelog-file }}"
