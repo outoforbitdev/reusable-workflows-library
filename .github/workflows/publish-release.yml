@@ -1,0 +1,78 @@
+# .github/workflows/publish-release.yml
+name: Publish Release
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Version to release (tag is created as v<version>)"
+        type: string
+        required: true
+      draft:
+        description: "Create the release as a draft"
+        type: boolean
+        default: true
+      prerelease:
+        description: "Mark the release as a pre-release"
+        type: boolean
+        default: false
+      release-notes:
+        description: "Release body (Markdown)"
+        type: string
+        default: ""
+      artifact-name:
+        description: "Name of a workflow artifact to download and attach to the release"
+        type: string
+        default: ""
+    outputs:
+      release-url:
+        description: "URL of the created release"
+        value: ${{ jobs.publish.outputs.release-url }}
+
+# Declare default permissions as none.
+permissions: {}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    name: Publish Release
+    permissions:
+      contents: write
+    outputs:
+      release-url: ${{ steps.create-release.outputs.release-url }}
+    steps:
+      - name: Download release artifact
+        if: inputs.artifact-name != ''
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: release-artifacts
+      - name: Create release
+        id: create-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_NOTES: ${{ inputs.release-notes }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_DRAFT: ${{ inputs.draft }}
+          RELEASE_PRERELEASE: ${{ inputs.prerelease }}
+          ARTIFACT_NAME: ${{ inputs.artifact-name }}
+        run: |
+          flags=()
+          if [ "$RELEASE_DRAFT" = "true" ]; then
+            flags+=(--draft)
+          fi
+          if [ "$RELEASE_PRERELEASE" = "true" ]; then
+            flags+=(--prerelease)
+          fi
+
+          artifact_files=()
+          if [ -n "$ARTIFACT_NAME" ]; then
+            artifact_files=(release-artifacts/*)
+          fi
+
+          url=$(gh release create "v${RELEASE_VERSION}" \
+            -R "${{ github.repository }}" \
+            --notes "$RELEASE_NOTES" \
+            "${flags[@]}" \
+            "${artifact_files[@]}")
+          echo "release-url=$url" >> "$GITHUB_OUTPUT"
