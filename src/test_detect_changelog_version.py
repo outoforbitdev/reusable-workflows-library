@@ -1,10 +1,17 @@
+import json
+import os
+import tempfile
 import unittest
+from unittest.mock import patch
 
 from detect_changelog_version import (  # noqa: F811 (re-import with additions)
+    detect,
+    fetch_releases,
     get_last_release_tag,
     is_prerelease_version,
     normalize_version,
     parse_changelog,
+    write_github_output,
 )
 
 
@@ -104,6 +111,115 @@ class TestGetLastReleaseTag(unittest.TestCase):
 
     def test_returns_none_for_empty_list(self):
         self.assertIsNone(get_last_release_tag([]))
+
+
+class TestFetchReleases(unittest.TestCase):
+    @patch("detect_changelog_version.subprocess.run")
+    def test_parses_newline_delimited_json_from_gh(self, mock_run):
+        mock_run.return_value.stdout = (
+            '{"tag_name": "v1.0.0", "created_at": "2026-01-01T00:00:00Z"}\n'
+            '{"tag_name": "v1.1.0", "created_at": "2026-02-01T00:00:00Z"}\n'
+        )
+        releases = fetch_releases("outoforbitdev/reusable-workflows-library")
+        self.assertEqual(
+            releases,
+            [
+                {"tag_name": "v1.0.0", "created_at": "2026-01-01T00:00:00Z"},
+                {"tag_name": "v1.1.0", "created_at": "2026-02-01T00:00:00Z"},
+            ],
+        )
+        args = mock_run.call_args.args[0]
+        self.assertEqual(args[0], "gh")
+        self.assertIn(
+            "repos/outoforbitdev/reusable-workflows-library/releases", args
+        )
+        self.assertIn("--paginate", args)
+
+    @patch("detect_changelog_version.subprocess.run")
+    def test_returns_empty_list_when_no_releases_exist(self, mock_run):
+        mock_run.return_value.stdout = ""
+        self.assertEqual(fetch_releases("outoforbitdev/empty-repo"), [])
+
+
+class TestWriteGithubOutput(unittest.TestCase):
+    def test_writes_multiline_value_with_delimiter(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output_path = os.path.join(tmp, "github_output")
+            open(output_path, "w").close()
+
+            write_github_output(output_path, "release-notes", "line one\nline two")
+
+            with open(output_path) as f:
+                content = f.read()
+
+            self.assertIn("release-notes<<", content)
+            self.assertIn("line one\nline two", content)
+            # The delimiter line must appear both to open and close the block.
+            delimiter = content.split("release-notes<<", 1)[1].splitlines()[0]
+            self.assertEqual(content.count(delimiter), 2)
+
+
+class TestDetect(unittest.TestCase):
+    @patch("detect_changelog_version.fetch_releases")
+    def test_should_release_true_when_versions_differ(self, mock_fetch):
+        mock_fetch.return_value = [
+            {"tag_name": "v1.0.0", "created_at": "2026-01-01T00:00:00Z"},
+        ]
+        with tempfile.NamedTemporaryFile(
+            "w", suffix=".md", delete=False
+        ) as changelog:
+            changelog.write("## 1.1.0\n\n### Features\n- new thing\n")
+            changelog_path = changelog.name
+
+        try:
+            result = detect(changelog_path, "outoforbitdev/example")
+        finally:
+            os.remove(changelog_path)
+
+        self.assertEqual(
+            result,
+            {
+                "should-release": "true",
+                "new-version": "1.1.0",
+                "previous-version": "1.0.0",
+                "release-notes": "### Features\n- new thing",
+                "is-prerelease": "false",
+            },
+        )
+
+    @patch("detect_changelog_version.fetch_releases")
+    def test_should_release_false_when_already_released(self, mock_fetch):
+        mock_fetch.return_value = [
+            {"tag_name": "v1.1.0", "created_at": "2026-02-01T00:00:00Z"},
+        ]
+        with tempfile.NamedTemporaryFile(
+            "w", suffix=".md", delete=False
+        ) as changelog:
+            changelog.write("## 1.1.0\n\nAlready released.\n")
+            changelog_path = changelog.name
+
+        try:
+            result = detect(changelog_path, "outoforbitdev/example")
+        finally:
+            os.remove(changelog_path)
+
+        self.assertEqual(result["should-release"], "false")
+
+    @patch("detect_changelog_version.fetch_releases")
+    def test_exits_with_error_when_no_version_found(self, mock_fetch):
+        mock_fetch.return_value = []
+        with tempfile.NamedTemporaryFile(
+            "w", suffix=".md", delete=False
+        ) as changelog:
+            changelog.write("# Changelog\n\n## Unreleased\n\n- wip\n")
+            changelog_path = changelog.name
+
+        try:
+            with self.assertRaises(SystemExit) as ctx:
+                detect(changelog_path, "outoforbitdev/example")
+            self.assertEqual(ctx.exception.code, 1)
+        finally:
+            os.remove(changelog_path)
 
 
 if __name__ == "__main__":
