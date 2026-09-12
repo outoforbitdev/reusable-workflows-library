@@ -50,6 +50,53 @@ jobs:
       issues: write
 ```
 
+### detect-new-changelog-version.yml
+
+Detects whether the top entry in a changelog file represents a version that
+hasn't been released on GitHub yet, and extracts its release notes.
+
+#### Example usage
+
+```yml
+jobs:
+  detect:
+    uses: outoforbitdev/reusable-workflows-library/.github/workflows/detect-new-changelog-version.yml@1.0.0
+    with:
+      changelog-file: ./CHANGELOG.md
+  build-and-publish:
+    needs: detect
+    if: needs.detect.outputs.should-release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Releasing ${{ needs.detect.outputs.new-version }}"
+```
+
+### publish-release.yml
+
+Creates a GitHub release for a given version, optionally attaching a
+previously uploaded workflow artifact.
+
+#### Example usage
+
+```yml
+name: Release
+on:
+  push:
+    branches: ["main"]
+
+# Declare default permissions as read only.
+permissions: read-all
+
+jobs:
+  publish:
+    uses: outoforbitdev/reusable-workflows-library/.github/workflows/publish-release.yml@1.0.0
+    with:
+      version: "1.2.0"
+      release-notes: "### Features\n- something new"
+    permissions:
+      contents: write
+```
+
 ### release.yml
 
 Runs [action-release-changelog](https://github.com/outoforbitdev/action-release-changelog)
