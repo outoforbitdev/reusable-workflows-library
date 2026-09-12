@@ -1,6 +1,7 @@
 import unittest
 
-from detect_changelog_version import (
+from detect_changelog_version import (  # noqa: F811 (re-import with additions)
+    get_last_release_tag,
     is_prerelease_version,
     normalize_version,
     parse_changelog,
@@ -83,6 +84,26 @@ class TestNormalizeVersion(unittest.TestCase):
 
     def test_leaves_unprefixed_version_unchanged(self):
         self.assertEqual(normalize_version("1.2.0"), "1.2.0")
+
+
+class TestGetLastReleaseTag(unittest.TestCase):
+    def test_picks_most_recently_created_release(self):
+        releases = [
+            {"tag_name": "v1.0.0", "created_at": "2026-01-01T00:00:00Z"},
+            {"tag_name": "v1.1.0", "created_at": "2026-02-01T00:00:00Z"},
+        ]
+        self.assertEqual(get_last_release_tag(releases), "v1.1.0")
+
+    def test_considers_draft_releases(self):
+        # No `draft` field is inspected at all -- the caller is responsible
+        # for including drafts in `releases` in the first place.
+        releases = [
+            {"tag_name": "v1.1.0", "created_at": "2026-02-01T00:00:00Z"},
+        ]
+        self.assertEqual(get_last_release_tag(releases), "v1.1.0")
+
+    def test_returns_none_for_empty_list(self):
+        self.assertIsNone(get_last_release_tag([]))
 
 
 if __name__ == "__main__":

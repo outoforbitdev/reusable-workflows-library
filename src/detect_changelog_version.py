@@ -40,3 +40,10 @@ def is_prerelease_version(version):
 
 def normalize_version(version):
     return re.sub(r'^[vV]', '', version)
+
+
+def get_last_release_tag(releases):
+    if not releases:
+        return None
+    latest = max(releases, key=lambda release: release["created_at"])
+    return latest["tag_name"]
