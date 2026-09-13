@@ -1,7 +1,17 @@
 name: Create Release
 permissions: {}
 on:
-  workflow_call: {}
+  workflow_call:
+    inputs:
+      draft:
+        description: "Create the release as a draft"
+        type: boolean
+        default: true
+    outputs:
+      release-url:
+        description: "URL of the created release, if one was created"
+        # yamllint disable-line rule:line-length
+        value: ${{ jobs.publish-called.outputs.release-url || jobs.publish-pushed.outputs.release-url }}
   push:
     branches:
       - main
@@ -9,20 +19,31 @@ on:
       - dev
       - staging
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    name: Create Github Release
+  detect:
     permissions:
       contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-        with:
-          persist-credentials: false
-      - name: Create Release
-        # yamllint disable-line rule:line-length
-        uses: outoforbitdev/action-release-changelog@a9aa3f7f87d3955e1c07f1decfe6df72d8b44cbf # v0.0.11
-        id: semantic-release
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
+    uses: ./.github/workflows/detect-new-changelog-version.yml
+  publish-called:
+    needs: detect
+    # yamllint disable-line rule:line-length
+    if: toJSON(inputs.draft) != 'null' && needs.detect.outputs.should-release == 'true'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/publish-release.yml
+    with:
+      version: ${{ needs.detect.outputs.new-version }}
+      prerelease: ${{ needs.detect.outputs.is-prerelease == 'true' }}
+      release-notes: ${{ needs.detect.outputs.release-notes }}
+      draft: ${{ inputs.draft }}
+  publish-pushed:
+    needs: detect
+    # yamllint disable-line rule:line-length
+    if: toJSON(inputs.draft) == 'null' && needs.detect.outputs.should-release == 'true'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/publish-release.yml
+    with:
+      version: ${{ needs.detect.outputs.new-version }}
+      prerelease: ${{ needs.detect.outputs.is-prerelease == 'true' }}
+      release-notes: ${{ needs.detect.outputs.release-notes }}
+      draft: true
