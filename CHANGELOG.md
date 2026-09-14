@@ -1,3 +1,11 @@
+## 1.2.0
+
+### Features
+- Add a `title` input to `publish-release.yml` so callers can override the release title; defaults to the `v<version>` tag
+
+### Fixes
+- Pass `--title` explicitly in `publish-release.yml` so release titles are just the version tag (e.g. `v0.0.4`) instead of falling back to the tag's associated commit message
+
 ## 1.1.0
 
 ### Features

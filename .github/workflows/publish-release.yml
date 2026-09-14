@@ -8,6 +8,10 @@ on:
         description: "Version to release (tag is created as v<version>)"
         type: string
         required: true
+      title:
+        description: "Release title (defaults to the v<version> tag)"
+        type: string
+        default: ""
       draft:
         description: "Create the release as a draft"
         type: boolean
@@ -53,11 +57,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_NOTES: ${{ inputs.release-notes }}
           RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_TITLE: ${{ inputs.title }}
           RELEASE_DRAFT: ${{ inputs.draft }}
           RELEASE_PRERELEASE: ${{ inputs.prerelease }}
           ARTIFACT_NAME: ${{ inputs.artifact-name }}
           RELEASE_TARGET: ${{ github.sha }}
         run: |
+          title="${RELEASE_TITLE:-v${RELEASE_VERSION}}"
+
           flags=()
           if [ "$RELEASE_DRAFT" = "true" ]; then
             flags+=(--draft)
@@ -76,6 +83,7 @@ jobs:
           url=$(gh release create "v${RELEASE_VERSION}" \
             -R "${{ github.repository }}" \
             --target "$RELEASE_TARGET" \
+            --title "$title" \
             --notes "$RELEASE_NOTES" \
             "${flags[@]}" \
             "${artifact_files[@]}")
