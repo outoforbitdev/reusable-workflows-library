@@ -76,6 +76,7 @@ jobs:
           url=$(gh release create "v${RELEASE_VERSION}" \
             -R "${{ github.repository }}" \
             --target "$RELEASE_TARGET" \
+            --title "v${RELEASE_VERSION}" \
             --notes "$RELEASE_NOTES" \
             "${flags[@]}" \
             "${artifact_files[@]}")

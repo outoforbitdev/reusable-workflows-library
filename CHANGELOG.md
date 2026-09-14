@@ -1,3 +1,8 @@
+## 1.1.1
+
+### Fixes
+- Pass `--title` explicitly in `publish-release.yml` so release titles are just the version tag (e.g. `v0.0.4`) instead of falling back to the tag's associated commit message
+
 ## 1.1.0
 
 ### Features
