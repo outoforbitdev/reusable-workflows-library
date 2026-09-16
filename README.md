@@ -155,6 +155,23 @@ To publish to GHCR instead, set `registry: ghcr` and pass
 `secrets.registry-token: ${{ secrets.GITHUB_TOKEN }}` in place of the
 Docker Hub secrets.
 
+### test-docker.yml
+
+Builds a Docker image and runs a test command inside a running container of
+that image, exposing whether the test succeeded.
+
+#### Example usage
+
+```yml
+jobs:
+  test-docker:
+    uses: outoforbitdev/reusable-workflows-library/.github/workflows/test-docker.yml@1.0.0
+    with:
+      test-command: "npm test"
+    permissions:
+      contents: read
+```
+
 ### scorecard.yml
 
 Runs [OSSF Scorecard action](https://github.com/ossf/scorecard-action#installation)
