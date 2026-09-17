@@ -1,3 +1,9 @@
+## 1.3.0
+
+### Features
+- Add `publish-docker.yml`: builds and publishes a Docker image to Docker Hub or GitHub Container Registry, composable as one job in a release chain
+- Add `test-docker.yml`: builds a Docker image and runs a test command inside it
+
 ## 1.2.0
 
 ### Features
