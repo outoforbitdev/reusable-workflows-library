@@ -121,6 +121,57 @@ jobs:
       contents: write
 ```
 
+### publish-docker.yml
+
+Builds and pushes a Docker image to Docker Hub or GitHub Container Registry
+(via the `registry` input), tagging it with the given version and a
+commit-sha-suffixed tag (and optionally `latest`). Designed to be composed
+as one job in a release chain — see `example usage` for how
+`app-galaxy-map` chains it after `detect-new-changelog-version.yml` and
+`publish-release.yml`.
+
+#### Example usage
+
+```yml
+jobs:
+  publish-docker:
+    needs: [detect, release-publish]
+    if: needs.detect.outputs.should-release == 'true'
+    permissions:
+      contents: read
+      packages: write
+    uses: outoforbitdev/reusable-workflows-library/.github/workflows/publish-docker.yml@1.0.0
+    with:
+      registry: docker-hub
+      image-name: outoforbitdev/app-galaxy-map
+      image-tag: ${{ needs.detect.outputs.new-version }}
+      publish-latest: true
+    secrets:
+      docker-username: ${{ vars.DOCKER_USERNAME }}
+      docker-token: ${{ secrets.DOCKER_TOKEN }}
+```
+
+To publish to GHCR instead, set `registry: ghcr` and pass
+`secrets.registry-token: ${{ secrets.GITHUB_TOKEN }}` in place of the
+Docker Hub secrets.
+
+### test-docker.yml
+
+Builds a Docker image and runs a test command inside a running container of
+that image, exposing whether the test succeeded.
+
+#### Example usage
+
+```yml
+jobs:
+  test-docker:
+    uses: outoforbitdev/reusable-workflows-library/.github/workflows/test-docker.yml@1.0.0
+    with:
+      test-command: "npm test"
+    permissions:
+      contents: read
+```
+
 ### scorecard.yml
 
 Runs [OSSF Scorecard action](https://github.com/ossf/scorecard-action#installation)

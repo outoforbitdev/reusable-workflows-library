@@ -1,0 +1,63 @@
+name: Test Docker
+
+on:
+  workflow_call:
+    inputs:
+      test-command:
+        description: "Command to execute to run tests"
+        type: string
+        required: true
+      dockerfile-path:
+        description: "Path to the directory with the Dockerfile"
+        type: string
+        default: "."
+      build-command:
+        description: "Full command to build the image"
+        type: string
+        default: "docker build"
+    outputs:
+      success:
+        description: "Whether the test was successful"
+        value: ${{ jobs.test.outputs.success }}
+
+permissions: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test Docker
+    permissions:
+      contents: read
+    outputs:
+      success: ${{ steps.set-output.outputs.success }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Generate unique container name
+        id: gen-name
+        run: echo "tag=$(uuidgen)" >> "$GITHUB_OUTPUT"
+        shell: bash
+      - name: Build image
+        env:
+          BUILD_COMMAND: ${{ inputs.build-command }}
+          DOCKERFILE_PATH: ${{ inputs.dockerfile-path }}
+          TAG: ${{ steps.gen-name.outputs.tag }}
+        run: ${BUILD_COMMAND} -t "${TAG}" "${DOCKERFILE_PATH}"
+        shell: bash
+      - name: Start container
+        env:
+          TAG: ${{ steps.gen-name.outputs.tag }}
+        run: docker run -dit -v "$(pwd):$(pwd)" -w "$(pwd)" --name "${TAG}" "${TAG}"
+        shell: bash
+      - name: Run tests
+        env:
+          TAG: ${{ steps.gen-name.outputs.tag }}
+          TEST_COMMAND: ${{ inputs.test-command }}
+        run: docker exec "${TAG}" ${TEST_COMMAND}
+        shell: bash
+      - name: Set output
+        id: set-output
+        run: echo "success=true" >> "$GITHUB_OUTPUT"
+        shell: bash
