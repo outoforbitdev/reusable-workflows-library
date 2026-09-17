@@ -23,3 +23,42 @@ jobs:
       - name: Run tests
         run: python -m unittest test_detect_changelog_version -v
         working-directory: src
+
+  test-docker-workflow:
+    name: Test Docker Workflow
+    permissions:
+      contents: read
+    uses: ./.github/workflows/test-docker.yml
+    with:
+      dockerfile-path: test/docker-fixture
+      test-command: echo docker-fixture-ok
+
+  publish-docker-workflow-docker-hub-dry-run:
+    name: Publish Docker Workflow (Docker Hub dry run)
+    permissions:
+      contents: read
+    uses: ./.github/workflows/publish-docker.yml
+    with:
+      registry: docker-hub
+      image-name: outoforbitdev/reusable-workflows-library-ci-fixture
+      image-tag: ${{ github.sha }}
+      dockerfile-path: test/docker-fixture
+      dry-run: true
+    secrets:
+      docker-username: ${{ secrets.DOCKER_USERNAME }}
+      docker-token: ${{ secrets.DOCKER_TOKEN }}
+
+  publish-docker-workflow-ghcr-dry-run:
+    name: Publish Docker Workflow (GHCR dry run)
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/publish-docker.yml
+    with:
+      registry: ghcr
+      image-name: reusable-workflows-library-ci-fixture
+      image-tag: ${{ github.sha }}
+      dockerfile-path: test/docker-fixture
+      dry-run: true
+    secrets:
+      registry-token: ${{ secrets.GITHUB_TOKEN }}
