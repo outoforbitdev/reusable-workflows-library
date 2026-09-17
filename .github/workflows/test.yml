@@ -37,6 +37,7 @@ jobs:
     name: Publish Docker Workflow (Docker Hub dry run)
     permissions:
       contents: read
+      packages: write
     uses: ./.github/workflows/publish-docker.yml
     with:
       registry: docker-hub
