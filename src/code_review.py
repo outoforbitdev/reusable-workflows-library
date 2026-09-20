@@ -95,25 +95,19 @@ def post_comments(comments, repo, pr_number, token, commit_id):
             print(f"Failed to post comment: {response.status_code} - {response.text}")
 
 def main():
-    print(os.environ['GITHUB_COMMENT'])
     env = get_github_env()
     owner, repo = env["repo"].split("/")
     pr_number, pr_title, pr_body = get_pr_info(env["event_path"])
     
     diff = get_diff(owner, repo, pr_number)
     prompt = build_prompt(diff, pr_title, pr_body)
+    print("Prompt:")
+    print(prompt)
     print("Sending diff to model for review...")
-    # model_output = get_model_response(prompt)
-    print("Review completed. Adding comments to PR...")
-    model_output = """
-        [
-            {
-                "file": "src/code_review.py",
-                "line": 107,
-                "comment": "coding style: It might be beneficial to log the exception details for the JSONDecodeError to help trace any issues with the model output format."
-            }
-        ]
-    """
+    model_output = get_model_response(prompt)
+    print("Review completed. Model feedback:")
+    print(model_output)
+    print("Adding comments to PR...")
 
     try:
         comments = json.loads(model_output)
