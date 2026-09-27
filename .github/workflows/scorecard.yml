@@ -34,7 +34,7 @@ jobs:
 
       - name: "Run analysis"
         # yamllint disable-line rule:line-length
-        uses: ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a # v2.4.3
+        uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
         with:
           results_file: results.sarif
           results_format: sarif
@@ -73,6 +73,6 @@ jobs:
       # Scanning dashboard
       - name: "Upload to code-scanning"
         # yamllint disable-line rule:line-length
-        uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
+        uses: github/codeql-action/upload-sarif@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
         with:
           sarif_file: results.sarif

@@ -1,3 +1,9 @@
+## 1.3.1
+
+### Dependencies
+- Bump `ossf/scorecard-action` from `2.4.3` to `2.4.4`.
+- Bump `github/codeql-action/upload-sarif` from `4.38.0` to `4.38.1`.
+
 ## 1.3.0
 
 ### Features
