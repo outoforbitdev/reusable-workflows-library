@@ -75,6 +75,20 @@ class TestParseChangelog(unittest.TestCase):
         self.assertIsNone(version)
         self.assertIsNone(notes)
 
+    def test_handles_keep_a_changelog_bracketed_heading_with_date(self):
+        text = (
+            "# Changelog\n\n"
+            "## [Unreleased]\n\n"
+            "### Changed\n"
+            "- something in flight\n\n"
+            "## [1.2.0] - 2026-08-12\n\n"
+            "### Added\n"
+            "- a shipped feature\n"
+        )
+        version, notes = parse_changelog(text)
+        self.assertEqual(version, "1.2.0")
+        self.assertEqual(notes, "### Added\n- a shipped feature")
+
 
 class TestIsPrereleaseVersion(unittest.TestCase):
     def test_true_for_prerelease_suffix(self):
