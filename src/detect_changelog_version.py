@@ -6,7 +6,7 @@ import sys
 import uuid
 
 VERSION_HEADING_PATTERN = re.compile(
-    r'^(#{1,6})\s+(v?\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?)\b'
+    r'^(#{1,6})\s+\[?(v?\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?)\b\]?'
 )
 HEADING_PATTERN = re.compile(r'^(#{1,6})\s')
 PRERELEASE_SUFFIX_PATTERN = re.compile(r'-[0-9A-Za-z.-]+$')
