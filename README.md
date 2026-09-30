@@ -24,7 +24,34 @@ A library of reusable workflows.
 
 ### label-manager.yml
 
-Runs [action-label-manager](https://github.com/outoforbitdev/action-label-manager)
+Syncs GitHub labels to a repository using
+[github-label-sync](https://github.com/Financial-Times/github-label-sync). The
+workflow is self-contained: the default labels live in
+[`src/labels.json`](src/labels.json) and are versioned with the workflow ref you
+pin.
+
+Labels support `name`, `color`, `description`, and `aliases`. Aliases rename
+existing labels instead of creating duplicates.
+
+#### Inputs
+
+| Name | Required | Default | Description |
+| --- | --- | --- | --- |
+| `labels-file` | No | `""` | Path to a custom labels JSON file in the calling repository. |
+| `target-repository` | No | Calling repository | Repository (`owner/name`) to sync labels to. |
+
+#### Secrets
+
+| Name | Required | Default | Description |
+| --- | --- | --- | --- |
+| `access-token` | No | `GITHUB_TOKEN` | Token with `repo` scope, needed to sync a repository other than the calling one. |
+
+#### Default and custom labels
+
+By default the labels in `src/labels.json` are synced. When `labels-file` is
+provided and readable, it **replaces** the defaults entirely. If the file is
+missing or fails to sync, the workflow logs a warning and syncs the defaults
+instead.
 
 #### Example usage
 
@@ -48,7 +75,17 @@ jobs:
     uses: outoforbitdev/reusable-workflows-library/.github/workflows/label-manager.yml@1.0.0
     permissions:
       issues: write
+    # Optional: replace the default labels with your own.
+    # with:
+    #   labels-file: .labels.json
 ```
+
+#### Migrating from action-label-manager
+
+Replace `uses: outoforbitdev/action-label-manager@...` with the reusable
+workflow above. The action's `labels-file` input maps to the workflow's
+`labels-file` input, `target-repository` is unchanged, and `access-token` is now
+an optional secret.
 
 ### detect-new-changelog-version.yml
 

@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-09-29
+
+### Added
+- Add default labels file `src/labels.json`, including a new `type: ci` label.
+- Add `labels-file` and `target-repository` inputs and an optional `access-token` secret to `label-manager.yml`.
+- Add npm to the Dependabot configuration.
+
+### Changed
+- Reimplement `label-manager.yml` as a self-contained workflow that no longer depends on `outoforbitdev/action-label-manager`.
+- `label-manager.yml` now syncs the bundled default labels unless `labels-file` is provided.
+
 ## [1.3.1] - 2026-09-27
 
 ### Changed
