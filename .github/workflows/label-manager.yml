@@ -1,6 +1,28 @@
 name: Sync Labels
 on:
   workflow_call:
+    inputs:
+      labels-file:
+        description: >-
+          Path to a custom labels JSON file in the calling repository. When
+          empty, missing, or it fails to sync, the default labels bundled with
+          this workflow (src/labels.json) are synced instead.
+        type: string
+        required: false
+        default: ""
+      target-repository:
+        description: >-
+          Repository (owner/name) to sync labels to. Defaults to the calling
+          repository.
+        type: string
+        required: false
+        default: ""
+    secrets:
+      access-token:
+        description: >-
+          Token with `repo` scope, used to sync labels to a repository other
+          than the calling one. Defaults to GITHUB_TOKEN.
+        required: false
   issues:
     types:
       - opened
@@ -22,10 +44,39 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Set Labels
-        # yamllint disable-line rule:line-length
-        uses: outoforbitdev/action-label-manager@f64cd32dd7a7d815dede80051cfd67d6dc667052 # v0.0.3
-        id: set-labels
+      - name: Checkout reusable-workflows-library scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          access-token: ${{ secrets.GITHUB_TOKEN }}
-          labels-file: .labels.json
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: .rwl
+          persist-credentials: false
+      - name: Set up Node
+        # yamllint disable-line rule:line-length
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+      - name: Install github-label-sync
+        run: npm ci --ignore-scripts --prefix .rwl
+      - name: Sync labels
+        env:
+          GITHUB_TOKEN: ${{ secrets.access-token || secrets.GITHUB_TOKEN }}
+          # yamllint disable-line rule:line-length
+          TARGET_REPOSITORY: ${{ inputs.target-repository || github.repository }}
+          LABELS_FILE: ${{ inputs.labels-file }}
+        run: |
+          sync() {
+            .rwl/node_modules/.bin/github-label-sync \
+              --access-token "$GITHUB_TOKEN" --labels "$1" "$TARGET_REPOSITORY"
+          }
+          if [ -n "$LABELS_FILE" ] && [ -f "$LABELS_FILE" ]; then
+            if sync "$LABELS_FILE"; then
+              echo "Labels synced from custom file: $LABELS_FILE"
+              exit 0
+            fi
+            echo "::warning::Failed to sync $LABELS_FILE, using default labels."
+          elif [ -n "$LABELS_FILE" ]; then
+            echo "::warning::$LABELS_FILE not found, using default labels."
+          fi
+          sync .rwl/src/labels.json
+          echo "Labels synced from default file."

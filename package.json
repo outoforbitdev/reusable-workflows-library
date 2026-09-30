@@ -1,0 +1,8 @@
+{
+  "name": "reusable-workflows-library",
+  "private": true,
+  "description": "Pins npm tooling used by the reusable workflows so Dependabot can update it.",
+  "dependencies": {
+    "github-label-sync": "3.0.0"
+  }
+}
