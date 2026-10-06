@@ -1,17 +1,8 @@
+# Internal workflow: creates this repo's own releases. It is not callable from
+# other repositories. Use publish-release.yml for reusable release creation.
 name: Create Release
 permissions: {}
 on:
-  workflow_call:
-    inputs:
-      draft:
-        description: "Create the release as a draft"
-        type: boolean
-        default: true
-    outputs:
-      release-url:
-        description: "URL of the created release, if one was created"
-        # yamllint disable-line rule:line-length
-        value: ${{ jobs.publish-called.outputs.release-url || jobs.publish-pushed.outputs.release-url }}
   push:
     branches:
       - main
@@ -23,10 +14,9 @@ jobs:
     permissions:
       contents: write
     uses: ./.github/workflows/detect-new-changelog-version.yml
-  publish-called:
+  publish:
     needs: detect
-    # yamllint disable-line rule:line-length
-    if: toJSON(inputs.draft) != 'null' && needs.detect.outputs.should-release == 'true'
+    if: needs.detect.outputs.should-release == 'true'
     permissions:
       contents: write
     uses: ./.github/workflows/publish-release.yml
@@ -34,16 +24,4 @@ jobs:
       version: ${{ needs.detect.outputs.new-version }}
       prerelease: ${{ needs.detect.outputs.is-prerelease == 'true' }}
       release-notes: ${{ needs.detect.outputs.release-notes }}
-      draft: ${{ inputs.draft }}
-  publish-pushed:
-    needs: detect
-    # yamllint disable-line rule:line-length
-    if: toJSON(inputs.draft) == 'null' && needs.detect.outputs.should-release == 'true'
-    permissions:
-      contents: write
-    uses: ./.github/workflows/publish-release.yml
-    with:
-      version: ${{ needs.detect.outputs.new-version }}
-      prerelease: ${{ needs.detect.outputs.is-prerelease == 'true' }}
-      release-notes: ${{ needs.detect.outputs.release-notes }}
-      draft: true
+      draft: false
