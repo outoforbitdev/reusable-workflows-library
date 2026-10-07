@@ -22,6 +22,8 @@ A library of reusable workflows.
 
 ## Workflows
 
+`release.yml` and `test.yml` are internal workflows that run this repository's own releases and tests. They are not reusable and cannot be called from other repositories.
+
 ### label-manager.yml
 
 Syncs GitHub labels to a repository using
@@ -130,30 +132,6 @@ jobs:
     with:
       version: "1.2.0"
       release-notes: "### Features\n- something new"
-    permissions:
-      contents: write
-```
-
-### release.yml
-
-Detects whether a new version is ready to release (via `detect-new-changelog-version.yml`) and, if so, creates the GitHub release (via `publish-release.yml`).
-
-#### Example usage
-
-```yml
-name: Release
-on:
-  push:
-    branches: ["main"]
-
-# Declare default permissions as read only.
-permissions: read-all
-
-jobs:
-  release:
-    uses: outoforbitdev/reusable-workflows-library/.github/workflows/release.yml@1.0.0
-    with:
-      draft: false
     permissions:
       contents: write
 ```
