@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.2] - 2026-10-19
+
+### Changed
+- Bump `github/codeql-action/upload-sarif` from `4.38.2` to `4.38.3`.
+- Bump `ossf/scorecard-action` from `2.4.4` to `2.5.0`.
+- Bump `actions/upload-artifact` from `7.0.1` to `7.0.2`.
+- Bump `actions/download-artifact` from `8.0.1` to `8.0.2`.
+- Bump `actions/setup-node` from `7.0.0` to `7.1.0`.
+
 ### Removed
 - Remove `release.yml` from the reusable workflows. It is now an internal workflow and is no longer callable from other repositories. Use `publish-release.yml` to create releases from other repositories.
 
