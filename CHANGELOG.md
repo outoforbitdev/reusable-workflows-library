@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.4.3] - 2026-10-27
+
+### Changed
+- Bump `github/codeql-action/upload-sarif` from `4.38.3` to `4.39.1`.
+- Bump `actions/setup-python` from `7.0.0` to `7.1.0`.
 
 ## [1.4.2] - 2026-10-19
 
