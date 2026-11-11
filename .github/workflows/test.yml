@@ -63,3 +63,21 @@ jobs:
       dry-run: true
     secrets:
       registry-token: ${{ secrets.GITHUB_TOKEN }}
+
+  send-discord-message-workflow-dry-run:
+    name: Send Discord Message Workflow (dry run)
+    permissions: {}
+    uses: ./.github/workflows/send-discord-message.yml
+    with:
+      message: Dry run from ${{ github.repository }}
+      username: CI
+      embed-title: Dry run
+      embed-description: Verifies the payload is built without sending it.
+      embed-color: 2ea44f
+      embed-footer: ${{ github.repository }}
+      embed-timestamp: true
+      embed-fields: '[{"name": "Commit", "value": "${{ github.sha }}", "inline": true}]'
+      dry-run: true
+    secrets:
+      # A well-formed but fake URL; a dry run never contacts Discord.
+      webhook-url: https://discord.com/api/webhooks/1/dry-run

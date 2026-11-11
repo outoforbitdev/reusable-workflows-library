@@ -1,0 +1,231 @@
+# .github/workflows/send-discord-message.yml
+name: Send Discord Message
+
+on:
+  workflow_call:
+    inputs:
+      message:
+        description: "Plain message content (max 2000 characters). Optional if an embed input is set"
+        type: string
+        default: ""
+      username:
+        description: "Overrides the webhook's display name for this message"
+        type: string
+        default: ""
+      avatar-url:
+        description: "Overrides the webhook's avatar for this message"
+        type: string
+        default: ""
+      embed-title:
+        description: "Embed title (max 256 characters)"
+        type: string
+        default: ""
+      embed-description:
+        description: "Embed body in Markdown (max 4096 characters)"
+        type: string
+        default: ""
+      embed-url:
+        description: "URL the embed title links to"
+        type: string
+        default: ""
+      embed-color:
+        description: "Embed accent color as a hex string, for example 2ea44f"
+        type: string
+        default: ""
+      embed-footer:
+        description: "Embed footer text (max 2048 characters)"
+        type: string
+        default: ""
+      embed-timestamp:
+        description: "Show the current time in the embed"
+        type: boolean
+        default: false
+      embed-fields:
+        description: >-
+          JSON array of embed fields, each {"name": "...", "value": "...",
+          "inline": true}. At most 25 fields
+        type: string
+        default: ""
+      dry-run:
+        description: "Validate inputs and build the payload without sending it"
+        type: boolean
+        default: false
+    secrets:
+      webhook-url:
+        description: "Discord webhook URL for the target channel"
+        required: true
+
+# Declare default permissions as none.
+permissions: {}
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    name: Send Discord Message
+    permissions: {}
+    steps:
+      - name: Send message
+        env:
+          WEBHOOK_URL: ${{ secrets.webhook-url }}
+          MESSAGE: ${{ inputs.message }}
+          USERNAME: ${{ inputs.username }}
+          AVATAR_URL: ${{ inputs.avatar-url }}
+          EMBED_TITLE: ${{ inputs.embed-title }}
+          EMBED_DESCRIPTION: ${{ inputs.embed-description }}
+          EMBED_URL: ${{ inputs.embed-url }}
+          EMBED_COLOR: ${{ inputs.embed-color }}
+          EMBED_FOOTER: ${{ inputs.embed-footer }}
+          EMBED_TIMESTAMP: ${{ inputs.embed-timestamp }}
+          EMBED_FIELDS: ${{ inputs.embed-fields }}
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          set -euo pipefail
+
+          # Make sure the webhook URL can never appear in logs.
+          if [ -n "$WEBHOOK_URL" ]; then
+            echo "::add-mask::$WEBHOOK_URL"
+          fi
+
+          fail() {
+            echo "::error::$1"
+            exit 1
+          }
+
+          # Check the length of a value against Discord's limit.
+          check_length() {
+            local name="$1" value="$2" max="$3"
+            if [ "${#value}" -gt "$max" ]; then
+              fail "$name is ${#value} characters; Discord allows at most $max."
+            fi
+          }
+
+          # Validate the webhook secret without printing it.
+          if [ -z "$WEBHOOK_URL" ]; then
+            fail "The webhook-url secret is empty or missing."
+          fi
+          if ! [[ "$WEBHOOK_URL" =~ ^https://(canary\.|ptb\.)?(discord|discordapp)\.com/api(/v[0-9]+)?/webhooks/[0-9]+/[A-Za-z0-9_-]+$ ]]; then
+            fail "The webhook-url secret is not a valid Discord webhook URL."
+          fi
+
+          # Validate message content.
+          check_length "message" "$MESSAGE" 2000
+          check_length "username" "$USERNAME" 80
+          check_length "embed-title" "$EMBED_TITLE" 256
+          check_length "embed-description" "$EMBED_DESCRIPTION" 4096
+          check_length "embed-footer" "$EMBED_FOOTER" 2048
+
+          if [ -n "$USERNAME" ]; then
+            lowered=$(printf '%s' "$USERNAME" | tr '[:upper:]' '[:lower:]')
+            case "$lowered" in
+              *clyde*|*discord*)
+                fail "username must not contain 'clyde' or 'discord'; Discord rejects those names."
+                ;;
+            esac
+          fi
+
+          color=""
+          if [ -n "$EMBED_COLOR" ]; then
+            color="${EMBED_COLOR#\#}"
+            if ! [[ "$color" =~ ^[0-9a-fA-F]{6}$ ]]; then
+              fail "embed-color must be a 6 digit hex color such as 2ea44f."
+            fi
+            color=$((16#$color))
+          fi
+
+          fields="[]"
+          if [ -n "$EMBED_FIELDS" ]; then
+            if ! fields=$(printf '%s' "$EMBED_FIELDS" | jq -ce '.' 2>/dev/null); then
+              fail "embed-fields is not valid JSON."
+            fi
+            if ! printf '%s' "$fields" | jq -e '
+              type == "array" and length <= 25 and all(.[];
+                type == "object"
+                and (.name | type == "string" and length > 0 and length <= 256)
+                and (.value | type == "string" and length > 0 and length <= 1024)
+                and ((.inline // false) | type == "boolean"))
+            ' >/dev/null; then
+              fail "embed-fields must be a JSON array of at most 25 objects, each with a non-empty string name (max 256 characters), a non-empty string value (max 1024 characters), and an optional boolean inline."
+            fi
+          fi
+
+          has_embed=false
+          if [ -n "$EMBED_TITLE$EMBED_DESCRIPTION$EMBED_URL$EMBED_FOOTER$color" ] \
+            || [ "$EMBED_TIMESTAMP" = "true" ] \
+            || [ "$fields" != "[]" ]; then
+            has_embed=true
+          fi
+
+          if [ -z "$MESSAGE" ] && [ "$has_embed" = "false" ]; then
+            fail "Nothing to send: set message or at least one embed input."
+          fi
+
+          timestamp=""
+          if [ "$EMBED_TIMESTAMP" = "true" ]; then
+            timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          fi
+
+          # Build the payload with jq so every value is escaped correctly.
+          payload=$(jq -n \
+            --arg content "$MESSAGE" \
+            --arg username "$USERNAME" \
+            --arg avatar_url "$AVATAR_URL" \
+            --arg title "$EMBED_TITLE" \
+            --arg description "$EMBED_DESCRIPTION" \
+            --arg url "$EMBED_URL" \
+            --arg color "$color" \
+            --arg footer "$EMBED_FOOTER" \
+            --arg timestamp "$timestamp" \
+            --argjson fields "$fields" \
+            --argjson has_embed "$has_embed" '
+              {allowed_mentions: {parse: []}}
+              + (if $content != "" then {content: $content} else {} end)
+              + (if $username != "" then {username: $username} else {} end)
+              + (if $avatar_url != "" then {avatar_url: $avatar_url} else {} end)
+              + (if $has_embed then {embeds: [
+                  {}
+                  + (if $title != "" then {title: $title} else {} end)
+                  + (if $description != "" then {description: $description} else {} end)
+                  + (if $url != "" then {url: $url} else {} end)
+                  + (if $color != "" then {color: ($color | tonumber)} else {} end)
+                  + (if $footer != "" then {footer: {text: $footer}} else {} end)
+                  + (if $timestamp != "" then {timestamp: $timestamp} else {} end)
+                  + (if ($fields | length) > 0 then {fields: $fields} else {} end)
+                ]} else {} end)
+            ')
+
+          # Discord caps the combined text of an embed at 6000 characters.
+          embed_chars=$(printf '%s' "$payload" | jq '
+            [.embeds[]? | (.title // ""), (.description // ""),
+              (.footer.text // ""), (.fields[]? | .name, .value)]
+            | map(length) | add // 0')
+          if [ "$embed_chars" -gt 6000 ]; then
+            fail "The embed contains $embed_chars characters; Discord allows at most 6000 in total."
+          fi
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "Dry run: payload is valid and was not sent."
+            printf '%s' "$payload" | jq .
+            exit 0
+          fi
+
+          # Send the message. The URL is passed on stdin so it never appears in
+          # the process list, and retries cover rate limits and server errors.
+          response_file=$(mktemp)
+          status=$(printf 'url = "%s"\n' "$WEBHOOK_URL" | curl --silent --show-error \
+            --config - \
+            --request POST \
+            --header "Content-Type: application/json" \
+            --data "$payload" \
+            --max-time 30 \
+            --retry 3 \
+            --output "$response_file" \
+            --write-out '%{http_code}') || fail "Could not reach Discord."
+
+          if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
+            echo "Discord response:"
+            cat "$response_file"
+            echo
+            fail "Discord rejected the message with HTTP status $status."
+          fi
+
+          echo "Message delivered to Discord (HTTP $status)."

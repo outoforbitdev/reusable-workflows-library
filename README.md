@@ -187,6 +187,72 @@ jobs:
       contents: read
 ```
 
+### send-discord-message.yml
+
+Sends a message, an embed, or both to a Discord channel through a
+[webhook](https://discord.com/developers/docs/resources/webhook#execute-webhook).
+The webhook URL is passed as a secret and is masked so it never appears in logs.
+The workflow fails with a clear error if an input is invalid or Discord rejects
+the message.
+
+At least one of `message` or an `embed-*` input is required. Mentions in the
+message are never resolved (`allowed_mentions` is empty), so message content
+cannot ping users or roles.
+
+#### Inputs
+
+| Name | Required | Default | Description |
+| --- | --- | --- | --- |
+| `message` | No | `""` | Plain message content, up to 2000 characters. |
+| `username` | No | Webhook name | Display name for this message. Cannot contain `clyde` or `discord`. |
+| `avatar-url` | No | Webhook avatar | Avatar image URL for this message. |
+| `embed-title` | No | `""` | Embed title, up to 256 characters. |
+| `embed-description` | No | `""` | Embed body in Markdown, up to 4096 characters. |
+| `embed-url` | No | `""` | URL the embed title links to. |
+| `embed-color` | No | `""` | Embed accent color as a 6 digit hex string, for example `2ea44f`. |
+| `embed-footer` | No | `""` | Embed footer text, up to 2048 characters. |
+| `embed-timestamp` | No | `false` | Show the current time in the embed. |
+| `embed-fields` | No | `""` | JSON array of up to 25 fields, each `{"name": "...", "value": "...", "inline": true}`. `inline` is optional. |
+| `dry-run` | No | `false` | Validate inputs and print the payload without sending it. |
+
+An embed can hold at most 6000 characters in total across its title,
+description, footer, and field names and values.
+
+#### Secrets
+
+| Name | Required | Description |
+| --- | --- | --- |
+| `webhook-url` | Yes | Discord webhook URL (`https://discord.com/api/webhooks/<id>/<token>`). |
+
+#### Example usage
+
+```yml
+name: Notify
+on:
+  workflow_dispatch:
+
+# Declare default permissions as none.
+permissions: {}
+
+jobs:
+  notify:
+    uses: outoforbitdev/reusable-workflows-library/.github/workflows/send-discord-message.yml@1.5.0
+    with:
+      message: "Open pull requests need review"
+      username: Release Bot
+      embed-title: Open pull requests
+      embed-url: https://github.com/${{ github.repository }}/pulls
+      embed-color: 2ea44f
+      embed-timestamp: true
+      embed-fields: |
+        [
+          {"name": "Open", "value": "4", "inline": true},
+          {"name": "Needs review", "value": "2", "inline": true}
+        ]
+    secrets:
+      webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+```
+
 ### scorecard.yml
 
 Runs [OSSF Scorecard action](https://github.com/ossf/scorecard-action#installation)
