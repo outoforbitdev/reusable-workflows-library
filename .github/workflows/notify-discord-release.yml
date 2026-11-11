@@ -17,6 +17,13 @@ on:
           Release notes (Markdown); truncated to fit a Discord embed
         type: string
         default: ""
+      app-name:
+        description: >-
+          App name shown in the title, for example "my-app v1.2.0 released".
+          Defaults to the repository name without the owner; pass an empty
+          string to leave the name out
+        type: string
+        default: "{repository}"
       prerelease:
         description: "Mark the release as a pre-release"
         type: boolean
@@ -64,6 +71,7 @@ jobs:
           VERSION: ${{ inputs.version }}
           RELEASE_URL: ${{ inputs.release-url }}
           RELEASE_NOTES: ${{ inputs.release-notes }}
+          APP_NAME: ${{ inputs.app-name }}
           PRERELEASE: ${{ inputs.prerelease }}
           USERNAME: ${{ inputs.username }}
           AVATAR_URL: ${{ inputs.avatar-url }}
