@@ -1,0 +1,72 @@
+# .github/workflows/notify-discord-release.yml
+name: Notify Discord of Release
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Released version, with or without a leading v"
+        type: string
+        required: true
+      release-url:
+        description: "URL of the release, used as the embed link"
+        type: string
+        default: ""
+      release-notes:
+        description: >-
+          Release notes (Markdown); truncated to fit a Discord embed
+        type: string
+        default: ""
+      prerelease:
+        description: "Mark the release as a pre-release"
+        type: boolean
+        default: false
+      username:
+        description: "Overrides the webhook's display name for this message"
+        type: string
+        default: ""
+      avatar-url:
+        description: "Overrides the webhook's avatar for this message"
+        type: string
+        default: ""
+      dry-run:
+        description: "Validate inputs and build the payload without sending it"
+        type: boolean
+        default: false
+    secrets:
+      webhook-url:
+        description: "Discord webhook URL for the target channel"
+        required: true
+
+# Declare default permissions as none.
+permissions: {}
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    name: Notify Discord of Release
+    permissions: {}
+    steps:
+      - name: Checkout reusable-workflows-library scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: .rwl
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"
+      - name: Send release notification
+        env:
+          WEBHOOK_URL: ${{ secrets.webhook-url }}
+          VERSION: ${{ inputs.version }}
+          RELEASE_URL: ${{ inputs.release-url }}
+          RELEASE_NOTES: ${{ inputs.release-notes }}
+          PRERELEASE: ${{ inputs.prerelease }}
+          USERNAME: ${{ inputs.username }}
+          AVATAR_URL: ${{ inputs.avatar-url }}
+          REPOSITORY: ${{ github.repository }}
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: python .rwl/src/notify_discord_release.py

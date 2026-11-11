@@ -1,0 +1,94 @@
+# .github/workflows/send-discord-message.yml
+name: Send Discord Message
+
+on:
+  workflow_call:
+    inputs:
+      message:
+        description: >-
+          Plain message content (max 2000 characters). Optional if an embed
+          input is set
+        type: string
+        default: ""
+      username:
+        description: "Overrides the webhook's display name for this message"
+        type: string
+        default: ""
+      avatar-url:
+        description: "Overrides the webhook's avatar for this message"
+        type: string
+        default: ""
+      embed-title:
+        description: "Embed title (max 256 characters)"
+        type: string
+        default: ""
+      embed-description:
+        description: "Embed body in Markdown (max 4096 characters)"
+        type: string
+        default: ""
+      embed-url:
+        description: "URL the embed title links to"
+        type: string
+        default: ""
+      embed-color:
+        description: "Embed accent color as a hex string, for example 2ea44f"
+        type: string
+        default: ""
+      embed-footer:
+        description: "Embed footer text (max 2048 characters)"
+        type: string
+        default: ""
+      embed-timestamp:
+        description: "Show the current time in the embed"
+        type: boolean
+        default: false
+      embed-fields:
+        description: >-
+          JSON array of embed fields, each {"name": "...", "value": "...",
+          "inline": true}. At most 25 fields
+        type: string
+        default: ""
+      dry-run:
+        description: "Validate inputs and build the payload without sending it"
+        type: boolean
+        default: false
+    secrets:
+      webhook-url:
+        description: "Discord webhook URL for the target channel"
+        required: true
+
+# Declare default permissions as none.
+permissions: {}
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    name: Send Discord Message
+    permissions: {}
+    steps:
+      - name: Checkout reusable-workflows-library scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: .rwl
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"
+      - name: Send message
+        env:
+          WEBHOOK_URL: ${{ secrets.webhook-url }}
+          MESSAGE: ${{ inputs.message }}
+          USERNAME: ${{ inputs.username }}
+          AVATAR_URL: ${{ inputs.avatar-url }}
+          EMBED_TITLE: ${{ inputs.embed-title }}
+          EMBED_DESCRIPTION: ${{ inputs.embed-description }}
+          EMBED_URL: ${{ inputs.embed-url }}
+          EMBED_COLOR: ${{ inputs.embed-color }}
+          EMBED_FOOTER: ${{ inputs.embed-footer }}
+          EMBED_TIMESTAMP: ${{ inputs.embed-timestamp }}
+          EMBED_FIELDS: ${{ inputs.embed-fields }}
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: python .rwl/src/send_discord_message.py

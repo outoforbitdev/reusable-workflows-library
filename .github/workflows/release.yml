@@ -25,3 +25,14 @@ jobs:
       prerelease: ${{ needs.detect.outputs.is-prerelease == 'true' }}
       release-notes: ${{ needs.detect.outputs.release-notes }}
       draft: false
+  notify:
+    needs: [detect, publish]
+    permissions: {}
+    uses: ./.github/workflows/notify-discord-release.yml
+    with:
+      version: ${{ needs.detect.outputs.new-version }}
+      release-url: ${{ needs.publish.outputs.release-url }}
+      release-notes: ${{ needs.detect.outputs.release-notes }}
+      prerelease: ${{ needs.detect.outputs.is-prerelease == 'true' }}
+    secrets:
+      webhook-url: ${{ secrets.DISCORD_RELEASES_WEBHOOK_URL }}
