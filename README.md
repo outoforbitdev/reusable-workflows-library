@@ -253,6 +253,63 @@ jobs:
       webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
 ```
 
+### notify-discord-release.yml
+
+Announces a release in Discord as an embed titled `v<version> released`. It
+links to the release, uses the release notes as the description (truncated to
+fit Discord's 4096 character limit), shows the repository in the footer, and
+is green for a release or orange for a pre-release. It sends the message the
+same way as `send-discord-message.yml`, with the same validation and a masked
+webhook URL.
+
+#### Inputs
+
+| Name | Required | Default | Description |
+| --- | --- | --- | --- |
+| `version` | Yes | | Released version, with or without a leading `v`. |
+| `release-url` | No | `""` | URL of the release, used as the embed link. |
+| `release-notes` | No | `""` | Release notes in Markdown. |
+| `prerelease` | No | `false` | Mark the release as a pre-release. |
+| `username` | No | Webhook name | Display name for this message. |
+| `avatar-url` | No | Webhook avatar | Avatar image URL for this message. |
+| `dry-run` | No | `false` | Validate inputs and print the payload without sending it. |
+
+#### Secrets
+
+| Name | Required | Description |
+| --- | --- | --- |
+| `webhook-url` | Yes | Discord webhook URL (`https://discord.com/api/webhooks/<id>/<token>`). |
+
+#### Example usage
+
+```yml
+jobs:
+  detect:
+    uses: outoforbitdev/reusable-workflows-library/.github/workflows/detect-new-changelog-version.yml@1.5.0
+    permissions:
+      contents: write
+  publish:
+    needs: detect
+    if: needs.detect.outputs.should-release == 'true'
+    uses: outoforbitdev/reusable-workflows-library/.github/workflows/publish-release.yml@1.5.0
+    permissions:
+      contents: write
+    with:
+      version: ${{ needs.detect.outputs.new-version }}
+      release-notes: ${{ needs.detect.outputs.release-notes }}
+      draft: false
+  notify:
+    needs: [detect, publish]
+    uses: outoforbitdev/reusable-workflows-library/.github/workflows/notify-discord-release.yml@1.5.0
+    with:
+      version: ${{ needs.detect.outputs.new-version }}
+      release-url: ${{ needs.publish.outputs.release-url }}
+      release-notes: ${{ needs.detect.outputs.release-notes }}
+      prerelease: ${{ needs.detect.outputs.is-prerelease == 'true' }}
+    secrets:
+      webhook-url: ${{ secrets.DISCORD_RELEASES_WEBHOOK_URL }}
+```
+
 ### scorecard.yml
 
 Runs [OSSF Scorecard action](https://github.com/ossf/scorecard-action#installation)

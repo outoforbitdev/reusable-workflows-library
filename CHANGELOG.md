@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `send-discord-message.yml` reusable workflow that posts a message, an embed, or both to a Discord server through a webhook.
+- `notify-discord-release.yml` reusable workflow that announces a release in Discord as an embed.
 - Discord notification for each new release of this repository.
 
 ## [1.4.5] - 2026-11-10

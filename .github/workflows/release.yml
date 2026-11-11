@@ -25,38 +25,14 @@ jobs:
       prerelease: ${{ needs.detect.outputs.is-prerelease == 'true' }}
       release-notes: ${{ needs.detect.outputs.release-notes }}
       draft: false
-  prepare-notification:
-    needs: [detect, publish]
-    runs-on: ubuntu-latest
-    permissions: {}
-    outputs:
-      description: ${{ steps.truncate.outputs.description }}
-    steps:
-      - name: Truncate release notes to fit a Discord embed
-        id: truncate
-        env:
-          RELEASE_NOTES: ${{ needs.detect.outputs.release-notes }}
-        run: |
-          # Discord embed descriptions are limited to 4096 characters.
-          description="$RELEASE_NOTES"
-          if [ "${#description}" -gt 4000 ]; then
-            description="${description:0:4000}"$'\n\n'"...see the release for the full notes."
-          fi
-          {
-            echo "description<<EOF_NOTES"
-            echo "$description"
-            echo "EOF_NOTES"
-          } >> "$GITHUB_OUTPUT"
   notify:
-    needs: [detect, publish, prepare-notification]
+    needs: [detect, publish]
     permissions: {}
-    uses: ./.github/workflows/send-discord-message.yml
+    uses: ./.github/workflows/notify-discord-release.yml
     with:
-      embed-title: v${{ needs.detect.outputs.new-version }} released
-      embed-url: ${{ needs.publish.outputs.release-url }}
-      embed-description: ${{ needs.prepare-notification.outputs.description }}
-      embed-color: ${{ needs.detect.outputs.is-prerelease == 'true' && 'f0883e' || '2ea44f' }}
-      embed-footer: ${{ github.repository }}
-      embed-timestamp: true
+      version: ${{ needs.detect.outputs.new-version }}
+      release-url: ${{ needs.publish.outputs.release-url }}
+      release-notes: ${{ needs.detect.outputs.release-notes }}
+      prerelease: ${{ needs.detect.outputs.is-prerelease == 'true' }}
     secrets:
       webhook-url: ${{ secrets.DISCORD_RELEASES_WEBHOOK_URL }}
