@@ -255,7 +255,8 @@ jobs:
 
 ### notify-discord-release.yml
 
-Announces a release in Discord as an embed titled `v<version> released`. It
+Announces a release in Discord as an embed titled
+`<app-name> v<version> released`. It
 links to the release, uses the release notes as the description (truncated to
 fit Discord's 4096 character limit), shows the repository in the footer, and
 is green for a release or orange for a pre-release. It sends the message the
@@ -269,6 +270,7 @@ webhook URL.
 | `version` | Yes | | Released version, with or without a leading `v`. |
 | `release-url` | No | `""` | URL of the release, used as the embed link. |
 | `release-notes` | No | `""` | Release notes in Markdown. |
+| `app-name` | No | Repository name | App name shown in the title. Defaults to the repository name without the owner. Pass an empty string to leave it out. |
 | `prerelease` | No | `false` | Mark the release as a pre-release. |
 | `username` | No | Webhook name | Display name for this message. |
 | `avatar-url` | No | Webhook avatar | Avatar image URL for this message. |
@@ -300,7 +302,7 @@ jobs:
       draft: false
   notify:
     needs: [detect, publish]
-    uses: outoforbitdev/reusable-workflows-library/.github/workflows/notify-discord-release.yml@1.5.0
+    uses: outoforbitdev/reusable-workflows-library/.github/workflows/notify-discord-release.yml@1.5.1
     with:
       version: ${{ needs.detect.outputs.new-version }}
       release-url: ${{ needs.publish.outputs.release-url }}
