@@ -5,6 +5,8 @@ updates:
     directory: "/" # Default .github/workflows directory
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "02:00"
     labels:
       - "type: chore"
       - "work: obvious"
@@ -13,6 +15,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "02:00"
     labels:
       - "type: chore"
       - "work: obvious"
